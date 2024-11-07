@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ethers, Signer } from "ethers";
 import WalletConnector from "./components/WalletConnector";
+import { getBLTMBalance } from "./utils/contractInteractions";
 
 interface Transaction {
   date: string;
@@ -17,6 +18,18 @@ export default function Home() {
   const [balance, setBalance] = useState<string>("0");
   const [exchangeRate, setExchangeRate] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    if (signer) {
+      fetchBalance();
+    }
+  }, [signer]);
+
+  const fetchBalance = async () => {
+    if (!signer) return;
+    const bal = await getBLTMBalance(signer);
+    setBalance(bal);
+  };
 
 
   return (
