@@ -1,4 +1,5 @@
 const { ethers } = require("hardhat");
+import { formatUnits } from "ethers";
 
 async function main() {
     console.log('Getting the fun token contract...');
@@ -14,7 +15,7 @@ async function main() {
     const ownerAddress = signers[0].address;
     let ownerBalance = await bltmToken.balanceOf(ownerAddress);
     let decimals = await bltmToken.decimals();
-    console.log(`Contract owner at ${ownerAddress} has a balance of ${ethers.utils.formatUnits(ownerBalance, decimals)}\n`);
+    console.log(`Contract owner at ${ownerAddress} has a balance of ${formatUnits(ownerBalance, decimals)}\n`);
 
 }
 
