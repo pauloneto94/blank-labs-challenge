@@ -1,52 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import { useAccount } from "wagmi";
+import { Signer } from "ethers";
+import { getTransactions } from "../utils/contractInteractions";
 
-// Define the interface for a transaction row
 interface Transaction {
   date: string;
   action: string;
   amount: string;
 }
 
-const TransactionTable: React.FC = () => {
+interface TransactionTableProps {
+    signer: Signer;
+  }
+
+export default function TransactionTable({signer}: TransactionTableProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [sortedByDate, setSortedByDate] = useState<boolean>(true); // Sort state
-  const [filterAction, setFilterAction] = useState<string>(""); // Filter state for mint/burn
+  const [sortedByDate, setSortedByDate] = useState<boolean>(true);
+  const [filterAction, setFilterAction] = useState<string>("");
 
-  const fetchTransactions = async (address: string) => {
-    // const provider = new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_INFURA_URL); // Replace with your provider
-    // const contractAddress = "YOUR_CONTRACT_ADDRESS"; // Your contract address
-    // const contractABI = [
-    //   "event Minted(address indexed user, uint256 amount)",
-    //   "event Burned(address indexed user, uint256 amount)",
-    // ];
-    // const contract = new ethers.Contract(contractAddress, contractABI, provider);
+  useEffect(() => {
+    if (signer) {
+      fetchTransactions(signer);
+    }
+  }, [signer]);
 
-    // // Fetch Mint and Burn events
-    // const mintedEvents = await contract.queryFilter(
-    //   contract.filters.Minted(address)
-    // );
-    // const burnedEvents = await contract.queryFilter(
-    //   contract.filters.Burned(address)
-    // );
-
-    // // Format and combine both minted and burned events
-    // const combinedEvents = [
-    //   ...mintedEvents.map((event) => ({
-    //     date: new Date(event.blockTimestamp * 1000).toLocaleString(),
-    //     action: "Minted",
-    //     amount: ethers.utils.formatEther(event.args.amount),
-    //   })),
-    //   ...burnedEvents.map((event) => ({
-    //     date: new Date(event.blockTimestamp * 1000).toLocaleString(),
-    //     action: "Burned",
-    //     amount: ethers.utils.formatEther(event.args.amount),
-    //   })),
-    // ];
-
-    // // Set the transactions state
-    // setTransactions(combinedEvents);
+  const fetchTransactions = async (signer: Signer) => {
+    getTransactions(signer).then(response => setTransactions(response))
   };
 
   const handleSort = () => {
@@ -71,8 +49,6 @@ const TransactionTable: React.FC = () => {
   return (
     <div className="mt-6 bg-white p-6 rounded shadow-md">
       <h2 className="text-2xl font-bold mb-4">Minted and Burned Tokens</h2>
-      
-      {/* Filter Buttons */}
       <div className="mb-4">
         <button
           className="bg-blue-500 text-white py-1 px-4 rounded mr-2"
@@ -88,7 +64,6 @@ const TransactionTable: React.FC = () => {
         </button>
       </div>
 
-      {/* Sort Button */}
       <button
         onClick={handleSort}
         className="bg-gray-500 text-white py-1 px-4 rounded mb-4"
@@ -96,7 +71,6 @@ const TransactionTable: React.FC = () => {
         Sort by Date
       </button>
 
-      {/* Transaction Table */}
       <table className="min-w-full table-auto bg-white rounded-lg shadow-md">
         <thead>
           <tr>
@@ -126,5 +100,3 @@ const TransactionTable: React.FC = () => {
     </div>
   );
 };
-
-export default TransactionTable;
