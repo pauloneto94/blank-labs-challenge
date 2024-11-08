@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { ethers, Signer } from "ethers";
 import WalletConnector from "./components/WalletConnector";
 import { getBLTMBalance, getExchangeRate, depositUSDC, withdrawERC20 } from "./utils/contractInteractions";
+import Header from "./components/Header";
+import ExchangeForm from "./components/ExchangeForm";
+import AdminPanel from "./components/AdminPanel";
+import TransactionTable from "./components/TransactionTable";
 
 interface Transaction {
   date: string;
@@ -46,12 +50,12 @@ export default function Home() {
     addTransaction("Deposit", amount);
   };
 
-  const handleWithdraw = async (amount: string) => {
-    if (!signer) return;
-    await withdrawERC20(amount, signer);
-    fetchBalance();
-    addTransaction("Withdraw", amount);
-  };
+  // const handleWithdraw = async (amount: string) => {
+  //   if (!signer) return;
+  //   await withdrawERC20(amount, signer);
+  //   fetchBalance();
+  //   addTransaction("Withdraw", amount);
+  // };
 
   const addTransaction = (action: string, amount: string) => {
     setTransactions([...transactions, {
@@ -61,40 +65,39 @@ export default function Home() {
     }]);
   };
 
+  const handleExchange = (amount: string, token: "USDC" | "BLTM") => {
+    alert(`Exchanging ${amount} ${token}`);
+  };
+
+  const handleSetExchangeRate = (newRate: number) => {
+    setExchangeRate(newRate);
+    alert(`Exchange rate updated to ${newRate}`);
+  };
+
+  const handleWithdraw = (amount: number) => {
+    alert(`Withdrawing ${amount} USDC`);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <h1>BLTM Liquidity Pool</h1>
-      <WalletConnector setSigner={setSigner} setWalletAddress={setWalletAddress} />
-      {signer && (
-        <>
-          <p>Wallet Address: {walletAddress}</p>
-          <p>BLTM Balance: {balance}</p>
-          <p>Exchange Rate (USDC - BLTM): {exchangeRate}</p>
-
-          <button onClick={() => handleDeposit("10")}>Deposit 10 USDC</button>
-          <button onClick={() => handleWithdraw("10")}>Withdraw 10 BLTM</button>
-
-          <h2>Transaction History</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Action</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx, index) => (
-                <tr key={index}>
-                  <td>{tx.date}</td>
-                  <td>{tx.action}</td>
-                  <td>{tx.amount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      )}
+    <div className="bg-gray-100 min-h-screen">
+      <Header />
+      <main className="container mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded shadow-md">
+            <h1 className="text-3xl font-semibold mb-4">Liquidity Pool</h1>
+            <WalletConnector setSigner={setSigner} setWalletAddress={setWalletAddress} />
+            <p className="text-lg mb-6">Current Exchange Rate: {exchangeRate}</p>
+            <p>Wallet Address: {walletAddress}</p>
+            <p>BLTM Balance: {balance}</p>
+          </div>
+          <ExchangeForm onExchange={handleExchange} />
+          <AdminPanel
+            onSetExchangeRate={handleSetExchangeRate}
+            onWithdraw={handleWithdraw}
+          />
+          <TransactionTable/>
+        </div>
+      </main>
     </div>
   );
 }
