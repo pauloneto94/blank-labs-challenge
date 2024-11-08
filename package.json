@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.1.0",
+    "chai": "^4.3.7",
     "ethers": "^6.13.4",
     "next": "15.0.0",
     "react": "19.0.0-rc-65a56d0e-20241020",
