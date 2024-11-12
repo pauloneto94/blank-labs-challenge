@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ethers, Signer } from "ethers";
 import WalletConnector from "./components/WalletConnector";
-import { getBLTMBalance, getExchangeRate, depositUSDC, withdrawERC20 } from "./utils/contractInteractions";
+import { getBLTMBalance, getExchangeRate, depositUSDC, setExchangeRate, withdrawERC20 } from "./utils/contractInteractions";
 import Header from "./components/Header";
 import ExchangeForm from "./components/ExchangeForm";
 import AdminPanel from "./components/AdminPanel";
@@ -20,7 +20,7 @@ export default function Home() {
   const [signer, setSigner] = useState<Signer | null>(null);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [balance, setBalance] = useState<string>("0");
-  const [exchangeRate, setExchangeRate] = useState<number>(0);
+  const [currentExchangeRate, setCurrentExchangeRate] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function Home() {
     if (!signer) return;
     const provider = signer.provider as ethers.Provider;
     const rate = await getExchangeRate(provider);
-    setExchangeRate(rate);
+    setCurrentExchangeRate(rate);
   };
 
   const handleDeposit = async (amount: string) => {
@@ -65,13 +65,16 @@ export default function Home() {
     }]);
   };
 
-  const handleExchange = (amount: string, token: "USDC" | "BLTM") => {
-    alert(`Exchanging ${amount} ${token}`);
+  const handleExchange = async (amount: string, token: "USDC" | "BLTM") => {
+    if (!signer) return;
+    if(token == "USDC") await depositUSDC(amount, signer)
+    else await withdrawERC20(amount, signer)
   };
 
-  const handleSetExchangeRate = (newRate: number) => {
-    setExchangeRate(newRate);
-    alert(`Exchange rate updated to ${newRate}`);
+  const handleSetExchangeRate = async (newRate: string) => {
+    if (!signer) return;
+    await setExchangeRate(newRate, signer)
+    alert(`Exchange rate set to ${newRate}`)
   };
 
   const handleWithdraw = (amount: number) => {
@@ -86,7 +89,7 @@ export default function Home() {
           <div className="bg-white p-6 rounded shadow-md">
             <h1 className="text-3xl font-semibold mb-4">Liquidity Pool</h1>
             <WalletConnector setSigner={setSigner} setWalletAddress={setWalletAddress} />
-            <p className="text-lg mb-6">Current Exchange Rate: {exchangeRate}</p>
+            <p className="text-lg mb-6">Current Exchange Rate: {currentExchangeRate}</p>
             <p>Wallet Address: {walletAddress}</p>
             <p>BLTM Balance: {balance}</p>
           </div>
@@ -95,7 +98,7 @@ export default function Home() {
             onSetExchangeRate={handleSetExchangeRate}
             onWithdraw={handleWithdraw}
           />
-          <TransactionTable/>
+          <TransactionTable signer={signer}/>
         </div>
       </main>
     </div>

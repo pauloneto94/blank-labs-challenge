@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 interface AdminPanelProps {
-  onSetExchangeRate: (rate: number) => void;
+  onSetExchangeRate: (rate: string) => void;
   onWithdraw: (amount: number) => void;
 }
 
 export default function AdminPanel({ onSetExchangeRate, onWithdraw }: AdminPanelProps) {
-  const [rate, setRate] = useState<number>(0);
+  const [rate, setRate] = useState<string>("0");
   const [withdrawAmount, setWithdrawAmount] = useState<number>(0);
 
   return (
@@ -15,9 +15,8 @@ export default function AdminPanel({ onSetExchangeRate, onWithdraw }: AdminPanel
       <div className="mb-4">
         <label className="block text-gray-700">Set Exchange Rate</label>
         <input
-          type="number"
           value={rate}
-          onChange={(e) => setRate(parseFloat(e.target.value))}
+          onChange={(e) => setRate(e.target.value)}
           className="w-full p-2 border rounded"
         />
         <button

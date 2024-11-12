@@ -21,7 +21,6 @@ contract LiquidityPool is AccessControl {
     }
 
     function setExchangeRate(uint256 newRate) public onlyRole(OWNER_ROLE) {
-        // Requirement 5: Update exchange rate
         exchangeRate = newRate;
     }
 

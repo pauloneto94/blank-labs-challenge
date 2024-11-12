@@ -1,11 +1,10 @@
 import { ethers, Signer, formatUnits, parseUnits, formatEther, EventLog } from "ethers";
 import BLTMTokenABI from "../../artifacts/contracts/BLTMToken.sol/BLTMToken.json";
 import LiquidityPoolABI from "../../artifacts/contracts/LiquidityPool.sol/LiquidityPool.json";
-import { list } from "postcss";
 
 const USDCAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582";
-const BLTMTokenAddress = "0x66010f1733EAF377acd38c3F4d3Fd130556fE14b";
-const LiquidityPoolAddress = "0xf10eDC0A8aB40a7E63465E50A5a8b3735715727E";
+const BLTMTokenAddress = "0xf74eEF519AdDE72C5a83b9845C1dc0e0980Fe77c";
+const LiquidityPoolAddress = "0x2331425159c5a1E650ddB510061f4699750752e9";
 
 const usdcAbi = [
   // balanceOf function
@@ -16,24 +15,25 @@ const usdcAbi = [
   "function approve(address spender, uint256 amount) returns (bool)"
 ];
 
-interface MintedEventLog extends EventLog {
-  args: {
-    user: string;
-    amount: number;
-  };
+interface Transaction {
+  date: Date;
+  action: "Minted" | "Burned";
+  amount: string;
 }
 
-interface BurnedEventLog extends EventLog {
+interface TransferEvent extends Event {
   args: {
-    user: string;
-    amount: number;
+    from: string;
+    to: string;
+    value: ethers.BigNumber;
   };
 }
 
 export const getBLTMBalance = async (signer: Signer): Promise<string> => {
   const contract = new ethers.Contract(BLTMTokenAddress, BLTMTokenABI.abi, signer);
   const balance = await contract.balanceOf(await signer.getAddress());
-  return formatUnits(balance, 6);
+  const decimal = await contract.decimals();
+  return formatUnits(balance, decimal);
 };
 
 export const getExchangeRate = async (provider: ethers.Provider): Promise<number> => {
@@ -42,16 +42,27 @@ export const getExchangeRate = async (provider: ethers.Provider): Promise<number
   return rate;
 };
 
+export const setExchangeRate = async (amount: string, signer: Signer): Promise<void> => {
+  const contract = new ethers.Contract(LiquidityPoolAddress, LiquidityPoolABI.abi, signer);
+  const tx = await contract.setExchangeRate(parseUnits(amount, 0));
+  await tx.wait();
+}
+
 export const depositUSDC = async (amount: string, signer: Signer): Promise<void> => {
   const usdcContract = new ethers.Contract(USDCAddress, usdcAbi, signer)
   const contract = new ethers.Contract(LiquidityPoolAddress, LiquidityPoolABI.abi, signer);
+  const balance = await usdcContract.balanceOf(await signer.getAddress());
+  console.log(parseUnits(amount, 6), balance)
 
-  const approveTx = await usdcContract.approve(LiquidityPoolAddress, parseUnits("1", 6), { gasLimit: 300000});
+  const approveTx = await usdcContract.approve(LiquidityPoolAddress, parseUnits(amount, 6));
   await approveTx.wait();
   console.log("USDC approved!");
 
-  const tx = await contract.exchangeUSDCForBLTM(parseUnits("1", 6));
-  await tx.wait();
+  const allowance = await usdcContract.allowance(await signer.getAddress(), LiquidityPoolAddress);
+  console.log("Allowance for LiquidityPool contract:", allowance.toString());
+
+  // const tx = await contract.exchangeUSDCForBLTM(parseUnits(amount, 6));
+  // await tx.wait();
 };
 
 export const withdrawERC20 = async (amount: string, signer: Signer): Promise<void> => {
@@ -60,40 +71,50 @@ export const withdrawERC20 = async (amount: string, signer: Signer): Promise<voi
   await tx.wait();
 };
 
-export const getTransactions = async (signer: Signer): Promise<any> => {
+export const getTransactions = async (signer: Signer): Promise<Transaction[]> => {
   const contract = new ethers.Contract(BLTMTokenAddress, BLTMTokenABI.abi, signer);
 
-  const mintedEvents = await contract.queryFilter(
-    contract.filters.Minted(await signer.getAddress())
-  ) as MintedEventLog[];
-  const burnedEvents = await contract.queryFilter(
-    contract.filters.Burned(await signer.getAddress())
-  ) as BurnedEventLog[];
+  const filter = contract.filters.Transfer();
+  const events = await contract.queryFilter(filter);
 
-  const combinedEvents = [
-    ...await Promise.all(
-      mintedEvents.map(async (event) => ({
-        date: await getBlockTimestamp(event.blockNumber, signer),
-        action: "Minted",
-        amount: formatEther(event.args.amount),
+  const mintAndBurnTransactions: Transaction[] = await Promise.all(
+    events
+      .filter((event): event is TransferEvent =>
+        Boolean(event.args && (event.args.from === ethers.constants.AddressZero || event.args.to === ethers.constants.AddressZero))
+      )
+      .map(async (event) => ({
+        date: new Date((await provider.getBlock(event.blockNumber)).timestamp * 1000),
+        action: event.args.from === ethers.constants.AddressZero ? "Minted" : "Burned",
+        amount: ethers.utils.formatUnits(event.args.value, 18),
       }))
-    ),
-    ...await Promise.all(
-      burnedEvents.map(async (event) => ({
-        date: await getBlockTimestamp(event.blockNumber, signer),
-        action: "Burned",
-        amount: formatEther(event.args.amount),
-      }))
-    ),
-  ];
+  );
 
-  return combinedEvents
+  return mintAndBurnTransactions;
+
+  // const combinedEvents = [
+  //   ...await Promise.all(
+  //     mintedEvents.map(async (event) => ({
+  //       date: await getBlockTimestamp(event.blockNumber, signer),
+  //       action: "Minted",
+  //       amount: formatEther(event.args.amount),
+  //     }))
+  //   ),
+  //   ...await Promise.all(
+  //     burnedEvents.map(async (event) => ({
+  //       date: await getBlockTimestamp(event.blockNumber, signer),
+  //       action: "Burned",
+  //       amount: formatEther(event.args.amount),
+  //     }))
+  //   ),
+  // ];
+
+  // return combinedEvents
 }
 
-const getBlockTimestamp = async (blockNumber: number, signer: Signer) => {
-  if (!signer.provider) {
-    throw new Error("Signer does not have a provider attached");
-  }
-  const block = await signer.provider.getBlock(blockNumber);
-  return new Date(block.timestamp * 1000).toLocaleString(); // Convert to human-readable date
-};
+// const getBlockTimestamp = async (blockNumber: number, signer: Signer) => {
+//   if (!signer.provider) {
+//     throw new Error("Signer does not have a provider attached");
+//   }
+//   const block = await signer.provider.getBlock(blockNumber);
+//   return new Date(block.timestamp * 1000).toLocaleString(); // Convert to human-readable date
+// };

@@ -3,8 +3,8 @@ import { Signer } from "ethers";
 import { getTransactions } from "../utils/contractInteractions";
 
 interface Transaction {
-  date: string;
-  action: string;
+  date: Date;
+  action: "Minted" | "Burned";
   amount: string;
 }
 
@@ -47,7 +47,7 @@ export default function TransactionTable({signer}: TransactionTableProps) {
   );
 
   return (
-    <div className="mt-6 bg-white p-6 rounded shadow-md">
+    <div className="mt-6 bg-white p-6 rounded shadow-md col-span-3">
       <h2 className="text-2xl font-bold mb-4">Minted and Burned Tokens</h2>
       <div className="mb-4">
         <button
@@ -83,7 +83,7 @@ export default function TransactionTable({signer}: TransactionTableProps) {
           {filteredTransactions.length > 0 ? (
             filteredTransactions.map((tx, index) => (
               <tr key={index}>
-                <td className="px-4 py-2 border-b">{tx.date}</td>
+                <td className="px-4 py-2 border-b">{tx.date.toLocaleDateString()}</td>
                 <td className="px-4 py-2 border-b">{tx.action}</td>
                 <td className="px-4 py-2 border-b">{tx.amount}</td>
               </tr>
