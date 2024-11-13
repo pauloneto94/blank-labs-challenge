@@ -1,7 +1,7 @@
 # Paulo Neto Basic dApp for RWA Investing
 
 ## Available at
-blank-labs-challenge.vercel.app
+[blank-labs-challenge.vercel.app](blank-labs-challenge.vercel.app)
 
 ## Description
 
