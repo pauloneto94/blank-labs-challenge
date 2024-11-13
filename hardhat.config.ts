@@ -11,7 +11,7 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      polygonAmoy: "YQKH1RWC1DYBAD2GP41HYE6IYKYNKAB9HP"
+      polygonAmoy: process.env.NEXT_PUBLIC_AMOY_API_KEY
     },
   }
 };
