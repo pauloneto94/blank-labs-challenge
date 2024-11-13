@@ -1,4 +1,4 @@
-import { ethers, Signer, formatUnits, parseUnits, formatEther, EventLog } from "ethers";
+import { ethers, Signer, formatUnits, parseUnits } from "ethers";
 import BLTMTokenABI from "../../artifacts/contracts/BLTMToken.sol/BLTMToken.json";
 import LiquidityPoolABI from "../../artifacts/contracts/LiquidityPool.sol/LiquidityPool.json";
 
@@ -18,13 +18,13 @@ interface Transaction {
   amount: string;
 }
 
-interface TransferEvent extends Event {
-  args: {
-    from: string;
-    to: string;
-    value: ethers.BigNumber;
-  };
-}
+// interface TransferEvent extends EventLog {
+//   args: {
+//     from: string;
+//     to: string;
+//     value: ethers.BigNumberish;
+//   };
+// }
 
 export const getBLTMBalance = async (signer: Signer): Promise<string> => {
   const contract = new ethers.Contract(BLTMTokenAddress, BLTMTokenABI.abi, signer);
@@ -69,24 +69,25 @@ export const withdrawERC20 = async (amount: string, signer: Signer): Promise<voi
 };
 
 export const getTransactions = async (signer: Signer): Promise<Transaction[]> => {
-  const contract = new ethers.Contract(BLTMTokenAddress, BLTMTokenABI.abi, signer);
+  console.log(signer)
+  // const contract = new ethers.Contract(BLTMTokenAddress, BLTMTokenABI.abi, signer);
 
-  const filter = contract.filters.Transfer();
-  const events = await contract.queryFilter(filter);
+  // const filter = contract.filters.Transfer();
+  // const events = await contract.queryFilter(filter);
 
-  const mintAndBurnTransactions: Transaction[] = await Promise.all(
-    events
-      .filter((event): event is TransferEvent =>
-        Boolean(event.args && (event.args.from === ethers.constants.AddressZero || event.args.to === ethers.constants.AddressZero))
-      )
-      .map(async (event) => ({
-        date: new Date((await provider.getBlock(event.blockNumber)).timestamp * 1000),
-        action: event.args.from === ethers.constants.AddressZero ? "Minted" : "Burned",
-        amount: ethers.utils.formatUnits(event.args.value, 18),
-      }))
-  );
+  // const mintAndBurnTransactions: Transaction[] = await Promise.all(
+  //   events
+  //     .filter((event): event is TransferEvent =>
+  //       Boolean(event.args && (event.args.from === ethers.constants.AddressZero || event.args.to === ethers.constants.AddressZero))
+  //     )
+  //     .map(async (event) => ({
+  //       date: new Date((await provider.getBlock(event.blockNumber)).timestamp * 1000),
+  //       action: event.args.from === ethers.constants.AddressZero ? "Minted" : "Burned",
+  //       amount: ethers.utils.formatUnits(event.args.value, 18),
+  //     }))
+  // );
 
-  return mintAndBurnTransactions;
+  return [] //mintAndBurnTransactions;
 
   // const combinedEvents = [
   //   ...await Promise.all(

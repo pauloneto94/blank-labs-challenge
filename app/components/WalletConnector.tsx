@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Web3Modal from "web3modal";
 import { ethers, Signer } from "ethers";
 

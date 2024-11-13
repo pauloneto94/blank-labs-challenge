@@ -5,7 +5,7 @@ export default function Header() {
         <div className="container mx-auto flex justify-between">
           <h1 className="text-2xl font-bold">Liquidity Pool Dashboard</h1>
           <nav>
-            <a href="/" className="px-4 hover:text-blue-200">Home</a>
+            <a className="px-4 hover:text-blue-200">Home</a>
           </nav>
         </div>
       </header>

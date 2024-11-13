@@ -9,7 +9,7 @@ interface Transaction {
 }
 
 interface TransactionTableProps {
-    signer: Signer;
+    signer?: Signer | null;
   }
 
 export default function TransactionTable({signer}: TransactionTableProps) {

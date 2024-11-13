@@ -9,19 +9,13 @@ import ExchangeForm from "./components/ExchangeForm";
 import AdminPanel from "./components/AdminPanel";
 import TransactionTable from "./components/TransactionTable";
 
-interface Transaction {
-  date: string;
-  action: string;
-  amount: string;
-}
-
 export default function Home() {
 
   const [signer, setSigner] = useState<Signer | null>(null);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [balance, setBalance] = useState<string>("0");
   const [currentExchangeRate, setCurrentExchangeRate] = useState<number>(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  //const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
     if (signer) {
@@ -43,12 +37,12 @@ export default function Home() {
     setCurrentExchangeRate(rate);
   };
 
-  const handleDeposit = async (amount: string) => {
-    if (!signer) return;
-    await depositUSDC(amount, signer);
-    fetchBalance();
-    addTransaction("Deposit", amount);
-  };
+  // const handleDeposit = async (amount: string) => {
+  //   if (!signer) return;
+  //   await depositUSDC(amount, signer);
+  //   fetchBalance();
+  //   addTransaction("Deposit", amount);
+  // };
 
   // const handleWithdraw = async (amount: string) => {
   //   if (!signer) return;
@@ -56,14 +50,6 @@ export default function Home() {
   //   fetchBalance();
   //   addTransaction("Withdraw", amount);
   // };
-
-  const addTransaction = (action: string, amount: string) => {
-    setTransactions([...transactions, {
-      date: new Date().toLocaleString(),
-      action,
-      amount,
-    }]);
-  };
 
   const handleExchange = async (amount: string, token: "USDC" | "BLTM") => {
     if (!signer) return;
