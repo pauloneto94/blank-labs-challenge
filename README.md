@@ -1,5 +1,8 @@
 # Paulo Neto Basic dApp for RWA Investing
 
+## Available at
+blank-labs-challenge.vercel.app
+
 ## Description
 
 This project allow users to connect with their wallets in polygon amoy network and exchange USDC tokens to BLTM Tokens an vice versa.
