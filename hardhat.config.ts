@@ -5,7 +5,7 @@ module.exports = {
   networks: {
     polygonAmoy: {
       url: "https://rpc-amoy.polygon.technology/",
-      accounts: ["0x8ccc03ea4075885b657d7d4923b582da39fb05567a36d1a02dfe762094b02206"],
+      accounts: [process.env.NEXT_PUBLIC_WALLET_PRIVATE_KEY],
       chainId: 80002
     }
   },

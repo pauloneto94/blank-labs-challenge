@@ -3,15 +3,12 @@ import BLTMTokenABI from "../../artifacts/contracts/BLTMToken.sol/BLTMToken.json
 import LiquidityPoolABI from "../../artifacts/contracts/LiquidityPool.sol/LiquidityPool.json";
 
 const USDCAddress = "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582";
-const BLTMTokenAddress = "0xf74eEF519AdDE72C5a83b9845C1dc0e0980Fe77c";
-const LiquidityPoolAddress = "0x2331425159c5a1E650ddB510061f4699750752e9";
+const BLTMTokenAddress = "0xaCF8B3e796bc21901a35318a1c7FbcCC783CF56E";
+const LiquidityPoolAddress = "0xAda4a6e474eF80E4e365566eB8b0088B1d1368A6";
 
 const usdcAbi = [
-  // balanceOf function
   "function balanceOf(address owner) view returns (uint256)",
-  // allowance function
   "function allowance(address owner, address spender) view returns (uint256)",
-  // approve function
   "function approve(address spender, uint256 amount) returns (bool)"
 ];
 
@@ -61,8 +58,8 @@ export const depositUSDC = async (amount: string, signer: Signer): Promise<void>
   const allowance = await usdcContract.allowance(await signer.getAddress(), LiquidityPoolAddress);
   console.log("Allowance for LiquidityPool contract:", allowance.toString());
 
-  // const tx = await contract.exchangeUSDCForBLTM(parseUnits(amount, 6));
-  // await tx.wait();
+  const tx = await contract.exchangeUSDCForBLTM(parseUnits(amount, 6));
+  await tx.wait();
 };
 
 export const withdrawERC20 = async (amount: string, signer: Signer): Promise<void> => {
